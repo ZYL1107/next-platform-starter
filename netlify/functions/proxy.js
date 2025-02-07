@@ -56,6 +56,7 @@ async function handler(event, context) {
     // 创建新的请求头
     const headers = new Headers(event.headers);
     headers.delete('host');
+    headers.delete('accept-encoding');  // **删除 Accept-Encoding，防止 gzip 压缩**
 
     // 转发请求到目标服务器
     const response = await fetch(targetUrl, {
