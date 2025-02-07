@@ -25,5 +25,19 @@
         "eslint-config-next": "15.1.6",
         "postcss": "^8.4.36",
         "tailwindcss": "^3.4.1"
-    }
+    },
+     "name": "netlify-proxy",
+  "version": "1.0.0",
+  "description": "A proxy service using Netlify Functions",
+  "main": "index.js",
+  "scripts": {
+    "dev": "netlify dev"
+  },
+  "dependencies": {
+    "@netlify/functions": "^1.0.0",
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {
+    "netlify-cli": "^12.0.0"
+  }
 }
