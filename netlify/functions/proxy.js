@@ -1,35 +1,67 @@
-export const handler = async (event) => {
-  const url = event.queryStringParameters.url; // 获取前端传递的 URL
-  if (!url) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "Missing 'url' parameter" }),
-    };
-  }
+// 配置允许的请求头和 CORS
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
-  try {
-    const response = await fetch(url, {
-      method: event.httpMethod,
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": "Netlify-Proxy-Function",
-      },
-    });
+export default {
+  async fetch(request, env, ctx) {
+    // 处理 CORS 预检请求
+    if (request.method === 'OPTIONS') {
+      return new Response(null, {
+        headers: corsHeaders
+      });
+    }
 
-    const data = await response.text(); // 获取响应数据
+    try {
+      // 获取请求URL的路径部分
+      const url = new URL(request.url);
+      const pathname = url.pathname;
 
-    return {
-      statusCode: response.status,
-      headers: {
-        "Access-Control-Allow-Origin": "*", // 允许跨域
-        "Content-Type": "application/json",
-      },
-      body: data, // 直接返回目标服务器的响应
-    };
-  } catch (error) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: "Internal Server Error", details: error.message }),
-    };
+      // 处理根路径请求
+      if (pathname === '/' || pathname === '/index.html') {
+        return new Response('Proxy is running!', {
+          headers: {
+            'Content-Type': 'text/plain',
+            ...corsHeaders
+          }
+        });
+      }
+
+      // 构建目标URL（移除开头的斜杠）
+      const targetUrl = `https://${pathname.slice(1)}`;
+      
+      // 创建新的请求头
+      const headers = new Headers(request.headers);
+      headers.delete('host'); // 删除原始 host 头
+
+      // 转发请求到目标服务器
+      const response = await fetch(targetUrl, {
+        method: request.method,
+        headers: headers,
+        body: request.body,
+        redirect: 'follow',
+      });
+
+      // 创建新的响应头
+      const responseHeaders = new Headers(response.headers);
+      Object.entries(corsHeaders).forEach(([key, value]) => {
+        responseHeaders.set(key, value);
+      });
+
+      // 返回响应
+      return new Response(response.body, {
+        status: response.status,
+        headers: responseHeaders
+      });
+
+    } catch (error) {
+      console.error('Proxy error:', error);
+      return new Response('Internal Server Error', {
+        status: 500,
+        headers: corsHeaders
+      });
+    }
   }
 };
