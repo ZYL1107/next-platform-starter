@@ -6,73 +6,86 @@ const corsHeaders = {
 };
 
 // 主要处理函数
-async function handler(request, env, ctx) {
+async function handler(event, context) {
   // 处理 CORS 预检请求
-  if (request.method === 'OPTIONS') {
-    return new Response(null, {
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 204,
       headers: corsHeaders
-    });
+    };
   }
 
   try {
-    // 获取请求URL的路径部分
-    const url = new URL(request.url);
-    const pathname = url.pathname;
-    
-    // 从路径中提取实际的目标URL
-    // 移除 /.netlify/functions/proxy 前缀
+    // 获取路径部分
+    const path = event.path;
     const prefix = '/.netlify/functions/proxy/';
-    if (!pathname.startsWith(prefix)) {
-      return new Response('Invalid proxy path', {
-        status: 400,
-        headers: corsHeaders
-      });
-    }
     
-    const targetPath = pathname.slice(prefix.length);
-    const targetUrl = `https://${targetPath}`;
-
-    // 处理根路径请求
-    if (!targetPath) {
-      return new Response('Proxy is running!', {
+    // 如果是根路径请求
+    if (!path || path === prefix || path === prefix.slice(0, -1)) {
+      return {
+        statusCode: 200,
         headers: {
           'Content-Type': 'text/plain',
           ...corsHeaders
-        }
-      });
+        },
+        body: 'Proxy is running!'
+      };
     }
 
+    // 确保路径以正确的前缀开始
+    if (!path.startsWith(prefix)) {
+      return {
+        statusCode: 400,
+        headers: corsHeaders,
+        body: 'Invalid proxy path'
+      };
+    }
+
+    // 提取目标URL
+    const targetPath = path.slice(prefix.length);
+    if (!targetPath) {
+      return {
+        statusCode: 400,
+        headers: corsHeaders,
+        body: 'No target URL provided'
+      };
+    }
+
+    const targetUrl = `https://${targetPath}`;
+
     // 创建新的请求头
-    const headers = new Headers(request.headers);
-    headers.delete('host'); // 删除原始 host 头
+    const headers = new Headers(event.headers);
+    headers.delete('host');
 
     // 转发请求到目标服务器
     const response = await fetch(targetUrl, {
-      method: request.method,
+      method: event.httpMethod,
       headers: headers,
-      body: request.body,
+      body: event.body,
       redirect: 'follow',
     });
 
-    // 创建新的响应头
-    const responseHeaders = new Headers(response.headers);
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      responseHeaders.set(key, value);
-    });
+    // 获取响应体
+    const responseBody = await response.text();
 
     // 返回响应
-    return new Response(response.body, {
-      status: response.status,
-      headers: responseHeaders
-    });
+    return {
+      statusCode: response.status,
+      headers: {
+        ...Object.fromEntries(response.headers),
+        ...corsHeaders
+      },
+      body: responseBody
+    };
+
   } catch (error) {
     console.error('Proxy error:', error);
-    return new Response('Internal Server Error', {
-      status: 500,
-      headers: corsHeaders
-    });
+    return {
+      statusCode: 500,
+      headers: corsHeaders,
+      body: 'Internal Server Error: ' + error.message
+    };
   }
 }
 
-// 正确的导出格式
-export { handler };
+exports.handler = handler;
