@@ -53,37 +53,55 @@ async function handler(event, context) {
 
     const targetUrl = `https://${targetPath}`;
 
-    // 创建新的请求头
-    const headers = new Headers(event.headers);
-    headers.delete('host');
-    headers.delete('accept-encoding');
-
-    // 处理请求体，特别是对于multipart/form-data
-    let body = event.body;
-    const contentType = event.headers['content-type'] || '';
-
-    // 如果是 Base64 编码的请求体，需要解码
-    if (event.isBase64Encoded) {
-      body = Buffer.from(event.body, 'base64');
-    }
-
-    // 转发请求到目标服务器
-    const response = await fetch(targetUrl, {
-      method: event.httpMethod,
-      headers: headers,
-      body: body,
-      redirect: 'follow',
+    // 创建新的Headers对象
+    const headers = new Headers();
+    
+    // 复制原始请求的headers
+    Object.entries(event.headers).forEach(([key, value]) => {
+      if (key.toLowerCase() !== 'host' && key.toLowerCase() !== 'accept-encoding') {
+        headers.set(key, value);
+      }
     });
 
-    // 获取响应体
-    let responseBody;
-    const responseContentType = response.headers.get('content-type') || '';
+    // 准备请求配置
+    const fetchOptions = {
+      method: event.httpMethod,
+      headers: headers,
+      redirect: 'follow',
+    };
 
-    // 如果响应是 JSON，使用 text() 方法
-    if (responseContentType.includes('application/json')) {
+    // 只有在有请求体的情况下才添加body
+    if (event.body) {
+      // 如果是Base64编码的请求体，需要解码
+      if (event.isBase64Encoded) {
+        fetchOptions.body = Buffer.from(event.body, 'base64');
+      } else {
+        // 对于JSON请求，保持原样
+        fetchOptions.body = event.body;
+      }
+    }
+
+    // 发送请求
+    const response = await fetch(targetUrl, fetchOptions);
+
+    // 获取响应头
+    const responseHeaders = {};
+    response.headers.forEach((value, key) => {
+      responseHeaders[key] = value;
+    });
+
+    // 处理响应体
+    let responseBody;
+    const contentType = response.headers.get('content-type') || '';
+    
+    if (contentType.includes('application/json')) {
+      // 对于JSON响应，直接获取文本
+      responseBody = await response.text();
+    } else if (contentType.includes('text/')) {
+      // 对于文本响应，直接获取文本
       responseBody = await response.text();
     } else {
-      // 对于二进制数据，使用 arrayBuffer() 并转换为 Base64
+      // 对于二进制数据，转换为Base64
       const buffer = await response.arrayBuffer();
       responseBody = Buffer.from(buffer).toString('base64');
     }
@@ -92,11 +110,11 @@ async function handler(event, context) {
     return {
       statusCode: response.status,
       headers: {
-        ...Object.fromEntries(response.headers),
+        ...responseHeaders,
         ...corsHeaders
       },
       body: responseBody,
-      isBase64Encoded: !responseContentType.includes('application/json')
+      isBase64Encoded: !contentType.includes('application/json') && !contentType.includes('text/')
     };
 
   } catch (error) {
@@ -104,7 +122,10 @@ async function handler(event, context) {
     return {
       statusCode: 500,
       headers: corsHeaders,
-      body: 'Internal Server Error: ' + error.message
+      body: JSON.stringify({
+        error: 'Internal Server Error',
+        message: error.message
+      })
     };
   }
 }
