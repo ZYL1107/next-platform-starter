@@ -66,7 +66,7 @@ Object.entries(event.headers).forEach(([key, value]) => {
 // 新增逻辑：如果目标是 Gemini API，则添加服务端身份验证
 if (targetPath.startsWith('generativelanguage.googleapis.com')) {
   // TODO: 在这里替换成你的服务端 OAuth token
-  headers.set('Authorization', 'Bearer YOUR_SERVER_OAUTH_TOKEN');
+  headers.set('Authorization', 'Bearer AIzaSyClz8C5lE2k2v8JJ7OCHJGtS0dcQjcJjDg');
 }
 
 
@@ -138,4 +138,5 @@ if (targetPath.startsWith('generativelanguage.googleapis.com')) {
 }
 
 exports.handler = handler;
+
 
