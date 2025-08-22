@@ -53,15 +53,22 @@ async function handler(event, context) {
 
     const targetUrl = `https://${targetPath}`;
 
-    // 创建新的Headers对象
-    const headers = new Headers();
+   // 创建新的Headers对象
+const headers = new Headers();
     
-    // 复制原始请求的headers
-    Object.entries(event.headers).forEach(([key, value]) => {
-      if (key.toLowerCase() !== 'host' && key.toLowerCase() !== 'accept-encoding') {
-        headers.set(key, value);
-      }
-    });
+// 复制原始请求的headers
+Object.entries(event.headers).forEach(([key, value]) => {
+  if (key.toLowerCase() !== 'host' && key.toLowerCase() !== 'accept-encoding') {
+    headers.set(key, value);
+  }
+});
+
+// 新增逻辑：如果目标是 Gemini API，则添加服务端身份验证
+if (targetPath.startsWith('generativelanguage.googleapis.com')) {
+  // TODO: 在这里替换成你的服务端 OAuth token
+  headers.set('Authorization', 'Bearer YOUR_SERVER_OAUTH_TOKEN');
+}
+
 
     // 准备请求配置
     const fetchOptions = {
@@ -131,3 +138,4 @@ async function handler(event, context) {
 }
 
 exports.handler = handler;
+
