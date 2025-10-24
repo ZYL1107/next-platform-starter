@@ -1,0 +1,9 @@
+{
+  "id": "Cyber Duel",
+  "name": "赛博战纪",
+  "description": "这是傻瓜式回合制游戏点击攻击或者回血",
+  "thumbnail": "/games/Cyber Duel/thumbnail.png",
+  "version": "1.0.0",
+  "orientation": "portrait",
+  "created": "2025-10-23"
+}

@@ -1,0 +1,9 @@
+{
+  "id": "Knight Order",
+  "name": "骑士归队",
+  "description": "欢迎来到骑士归队！你的任务是运用智慧，通过移动或点击等操作，将战场上的所有小兵整理成同一兵种。考验你的策略和组织能力，在有限的时间内完成军队的整编，成为最优秀的指挥官！",
+  "thumbnail": "/games/Knight Order/thumbnail.png",
+  "version": "1.0.0",
+  "orientation": "portrait",
+  "created": "2025-10-24"
+}
