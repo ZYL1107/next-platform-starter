@@ -50,21 +50,26 @@ export async function listGames() {
  */
 export async function getGameInfo(gameId) {
   try {
+    const decodedGameId = decodeURIComponent(gameId);
+    console.log(`[getGameInfo] 尝试获取游戏信息，gameId: ${decodedGameId}`);
     const configPath = path.join(
       process.cwd(),
       'public/games',
-      gameId,
+      decodedGameId,
       'game.json'
     );
 
     if (fs.existsSync(configPath)) {
       const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      console.log(`[getGameInfo] 找到游戏信息，返回: ${JSON.stringify(config)}`);
       return config;
     }
 
     return null;
   } catch (error) {
+    console.log(`[getGameInfo] 未找到游戏信息，configPath: ${configPath}`);
     console.error(`Error getting game info for ${gameId}:`, error);
+    console.log(`[getGameInfo] 错误，返回 null`);
     return null;
   }
 }
@@ -75,9 +80,15 @@ export async function getGameInfo(gameId) {
  */
 export async function gameExists(gameId) {
   try {
-    const gamePath = path.join(process.cwd(), 'public/games', gameId, 'index.html');
-    return fs.existsSync(gamePath);
+    const decodedGameId = decodeURIComponent(gameId);
+    console.log(`[gameExists] 检查游戏是否存在，gameId: ${decodedGameId}`);
+    const gamePath = path.join(process.cwd(), 'public/games', decodedGameId, 'index.html');
+    const exists = fs.existsSync(gamePath);
+    console.log(`[gameExists] 检查路径: ${gamePath}, 结果: ${exists}`);
+    return exists;
   } catch (error) {
+    console.error(`Error checking game existence for ${gameId}:`, error);
+    console.log(`[gameExists] 错误，返回 false`);
     return false;
   }
 }

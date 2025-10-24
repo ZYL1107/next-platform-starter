@@ -3,7 +3,8 @@ import { getGameInfo, gameExists } from '../actions';
 import GamePlayer from './game-player';
 
 export async function generateMetadata({ params }) {
-  const gameInfo = await getGameInfo(params.gameId);
+    const { gameId } = await params;
+  const gameInfo = await getGameInfo(gameId);
 
   if (!gameInfo) {
     return {
@@ -18,17 +19,15 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function GamePage({ params }) {
-  const { gameId } = params;
+  const { gameId } = await params;
 
-  // 检查游戏是否存在
-  const exists = await gameExists(gameId);
-  if (!exists) {
-    notFound();
-  }
+  // 并行获取游戏信息和检查是否存在
+  const [exists, gameInfo] = await Promise.all([
+    gameExists(gameId),
+    getGameInfo(gameId),
+  ]);
 
-  // 获取游戏信息
-  const gameInfo = await getGameInfo(gameId);
-  if (!gameInfo) {
+  if (!exists || !gameInfo) {
     notFound();
   }
 
