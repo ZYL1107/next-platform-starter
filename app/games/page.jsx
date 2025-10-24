@@ -79,7 +79,7 @@ export default async function GamesPage() {
             <div className="mockup-code text-left max-w-2xl mx-auto">
               <pre data-prefix="$"><code>mkdir public/games/my-game</code></pre>
               <pre data-prefix="$"><code>cp -r /path/to/cocos/build/web-mobile/* public/games/my-game/</code></pre>
-              <pre data-prefix="$"><code>echo '{"{"}"id":"my-game","name":"我的游戏"{"}"}' {'>'} public/games/my-game/game.json</code></pre>
+              <pre data-prefix="$"><code>{`echo '{"id":"my-game","name":"我的游戏"}' > public/games/my-game/game.json`}</code></pre>
             </div>
           </div>
         ) : (
