@@ -1,0 +1,9 @@
+{
+  "id": "shuerteColorShuzi",
+  "name": "舒尔特表格",
+  "description": "这是一个锻炼专注力的游戏，你需要按顺序从1找到25",
+  "thumbnail": "/games/example-game/thumbnail.png",
+  "version": "1.0.0",
+  "orientation": "portrait",
+  "created": "2025-10-24"
+}

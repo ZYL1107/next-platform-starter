@@ -60,6 +60,16 @@ async function RandomWikiArticle() {
         next: { revalidate: revalidateTTL, tags: [tagName] }
     });
 
+    // ⭐⭐⭐ 核心修改：检查响应状态码，避免解析 HTML 错误页面 ⭐⭐⭐
+    if (!randomWiki.ok) {
+        // 在构建时如果 API 不可用，这里会抛出错误，但至少不会是 JSON 解析错误。
+        // Next.js 会捕获这个错误，如果设置了 error.js，会显示错误界面。
+        const errorText = await randomWiki.text();
+        throw new Error(`Failed to fetch Wikipedia article: HTTP Status ${randomWiki.status}. Response start: ${errorText.slice(0, 100)}`);
+    }
+    
+    // 可以选择性地添加 Content-Type 检查，但检查 response.ok 通常足以解决主要问题。
+    
     const content = await randomWiki.json();
     let extract = content.extract;
     if (extract.length > maxExtractLength) {
