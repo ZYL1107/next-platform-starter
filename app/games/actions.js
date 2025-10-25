@@ -4,6 +4,33 @@ import fs from 'fs';
 import path from 'path';
 
 /**
+ * 查找游戏文件夹（大小写不敏感）
+ * @param {string} gameId - 游戏ID
+ * @returns {string|null} - 实际的文件夹名称，如果找不到返回null
+ */
+function findGameFolder(gameId) {
+  const gamesDir = path.join(process.cwd(), 'public/games');
+
+  if (!fs.existsSync(gamesDir)) {
+    return null;
+  }
+
+  const decodedGameId = decodeURIComponent(gameId);
+  const folders = fs.readdirSync(gamesDir);
+
+  // 先尝试精确匹配
+  if (folders.includes(decodedGameId)) {
+    return decodedGameId;
+  }
+
+  // 再尝试大小写不敏感匹配
+  const lowerGameId = decodedGameId.toLowerCase();
+  const matchedFolder = folders.find(folder => folder.toLowerCase() === lowerGameId);
+
+  return matchedFolder || null;
+}
+
+/**
  * 列出所有游戏
  * 扫描 public/games 目录，读取所有 game.json 配置文件
  */
@@ -50,12 +77,19 @@ export async function listGames() {
  */
 export async function getGameInfo(gameId) {
   try {
-    const decodedGameId = decodeURIComponent(gameId);
-    console.log(`[getGameInfo] 尝试获取游戏信息，gameId: ${decodedGameId}`);
+    const actualFolder = findGameFolder(gameId);
+
+    if (!actualFolder) {
+      console.log(`[getGameInfo] 未找到游戏文件夹，gameId: ${gameId}`);
+      return null;
+    }
+
+    console.log(`[getGameInfo] 尝试获取游戏信息，gameId: ${gameId}, 实际文件夹: ${actualFolder}`);
+
     const configPath = path.join(
       process.cwd(),
       'public/games',
-      decodedGameId,
+      actualFolder,
       'game.json'
     );
 
@@ -67,7 +101,6 @@ export async function getGameInfo(gameId) {
 
     return null;
   } catch (error) {
-    console.log(`[getGameInfo] 未找到游戏信息，configPath: ${configPath}`);
     console.error(`Error getting game info for ${gameId}:`, error);
     console.log(`[getGameInfo] 错误，返回 null`);
     return null;
@@ -80,9 +113,16 @@ export async function getGameInfo(gameId) {
  */
 export async function gameExists(gameId) {
   try {
-    const decodedGameId = decodeURIComponent(gameId);
-    console.log(`[gameExists] 检查游戏是否存在，gameId: ${decodedGameId}`);
-    const gamePath = path.join(process.cwd(), 'public/games', decodedGameId, 'index.html');
+    const actualFolder = findGameFolder(gameId);
+
+    if (!actualFolder) {
+      console.log(`[gameExists] 未找到游戏文件夹，gameId: ${gameId}`);
+      return false;
+    }
+
+    console.log(`[gameExists] 检查游戏是否存在，gameId: ${gameId}, 实际文件夹: ${actualFolder}`);
+
+    const gamePath = path.join(process.cwd(), 'public/games', actualFolder, 'index.html');
     const exists = fs.existsSync(gamePath);
     console.log(`[gameExists] 检查路径: ${gamePath}, 结果: ${exists}`);
     return exists;
