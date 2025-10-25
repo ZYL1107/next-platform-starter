@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { gameExists, getGameInfo } from '../../actions';
 
 export default async function GameDebugPage({ params }) {
@@ -53,15 +54,15 @@ export default async function GameDebugPage({ params }) {
       </div>
 
       <div className="mt-6 flex gap-4">
-        <a href={`/games/${gameId}`} className="btn btn-primary">
+        <Link href={`/games/${gameId}`} className="btn btn-primary">
           去游戏详情页
-        </a>
-        <a href={`/games/${gameId}/play`} className="btn btn-secondary">
+        </Link>
+        <Link href={`/games/${gameId}/play`} className="btn btn-secondary">
           去游戏播放页
-        </a>
-        <a href="/games" className="btn btn-ghost">
+        </Link>
+        <Link href="/games" className="btn btn-ghost">
           返回游戏列表
-        </a>
+        </Link>
       </div>
     </div>
   );
