@@ -4,7 +4,15 @@ import { randomUUID } from 'crypto';
 
 // 检查是否在 Netlify 环境中
 const isNetlifyEnvironment = () => {
-  return process.env.NETLIFY === 'true' || process.env.CONTEXT;
+  // 检查多个可能的 Netlify 环境变量
+  return !!(
+    process.env.NETLIFY ||
+    process.env.CONTEXT ||
+    process.env.NETLIFY_DEV ||
+    process.env.DEPLOY_URL ||
+    // 在生产环境中且不是本地开发
+    (process.env.NODE_ENV === 'production' && typeof window === 'undefined')
+  );
 };
 
 /**
