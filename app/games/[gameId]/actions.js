@@ -29,26 +29,40 @@ export async function getGameReviews(gameId, limit = 50) {
       return [];
     }
 
+    console.log('[getGameReviews] 开始获取评论，gameId:', gameId);
+
     const store = await getStore('game-reviews');
     const reviews = [];
 
     // 获取该游戏的所有评论
     const prefix = `reviews:${gameId}:`;
 
-    for await (const { key } of store.list({ prefix })) {
-      const data = await store.get(key);
-      if (data) {
-        reviews.push(JSON.parse(data));
+    console.log('[getGameReviews] 调用 list() 方法，prefix:', prefix);
+
+    // Netlify Blobs list() 返回一个带有 blobs 属性的对象
+    const { blobs } = await store.list({ prefix });
+
+    console.log('[getGameReviews] list() 返回的 blobs 数量:', blobs?.length || 0);
+
+    if (blobs && blobs.length > 0) {
+      for (const blob of blobs) {
+        const data = await store.get(blob.key);
+        if (data) {
+          reviews.push(JSON.parse(data));
+        }
+        if (reviews.length >= limit) break;
       }
-      if (reviews.length >= limit) break;
     }
 
     // 按时间倒序排序（最新的在前）
     reviews.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
+    console.log('[getGameReviews] 成功获取评论数量:', reviews.length);
+
     return reviews;
   } catch (error) {
-    console.error('Error getting game reviews:', error);
+    console.error('[getGameReviews] 错误:', error);
+    console.error('[getGameReviews] 错误详情:', error.message, error.stack);
     return [];
   }
 }
@@ -157,20 +171,32 @@ export async function getGameStats(gameId) {
       };
     }
 
+    console.log('[getGameStats] 开始获取评分统计，gameId:', gameId);
+
     const store = await getStore('game-reviews');
     const ratings = [];
 
     // 获取所有评分
     const prefix = `ratings:${gameId}:`;
 
-    for await (const { key } of store.list({ prefix })) {
-      const data = await store.get(key);
-      if (data) {
-        ratings.push(JSON.parse(data));
+    console.log('[getGameStats] 调用 list() 方法，prefix:', prefix);
+
+    // Netlify Blobs list() 返回一个带有 blobs 属性的对象
+    const { blobs } = await store.list({ prefix });
+
+    console.log('[getGameStats] list() 返回的 blobs 数量:', blobs?.length || 0);
+
+    if (blobs && blobs.length > 0) {
+      for (const blob of blobs) {
+        const data = await store.get(blob.key);
+        if (data) {
+          ratings.push(JSON.parse(data));
+        }
       }
     }
 
     if (ratings.length === 0) {
+      console.log('[getGameStats] 没有评分数据');
       return {
         averageRating: 0,
         totalRatings: 0,
@@ -192,12 +218,16 @@ export async function getGameStats(gameId) {
     // 获取评论总数
     const reviews = await getGameReviews(gameId, 1000);
 
-    return {
+    const stats = {
       averageRating: parseFloat(averageRating),
       totalRatings: ratings.length,
       totalReviews: reviews.length,
       ratingDistribution: distribution
     };
+
+    console.log('[getGameStats] 统计结果:', stats);
+
+    return stats;
   } catch (error) {
     console.error('Error getting game stats:', error);
     return {
