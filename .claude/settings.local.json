@@ -12,7 +12,11 @@
       "Bash(git push:*)",
       "Bash(npm run build:*)",
       "Bash(cat public/games/Bunny Leap/game.json)",
-      "Bash(npx update-browserslist-db@latest)"
+      "Bash(npx update-browserslist-db@latest)",
+      "Bash(for f in \"D:\\next-platform-starter-main\\public\\games\"/**/game.json)",
+      "Bash(cat:*)",
+      "Bash(done)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []

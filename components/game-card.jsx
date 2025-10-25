@@ -78,9 +78,9 @@ export function GameCard({ game }) {
               )}
             </div>
 
-            {/* 开始游戏按钮 */}
+            {/* 查看详情按钮 */}
             <button className="btn btn-primary btn-sm">
-              开始游戏
+              查看详情
             </button>
           </div>
         </div>
