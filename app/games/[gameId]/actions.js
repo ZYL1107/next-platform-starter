@@ -90,7 +90,10 @@ export async function submitReview(gameId, userName, rating, comment) {
     const timestamp = new Date().toISOString();
     const reviewId = `${Date.now()}-${randomUUID()}`;
 
+    console.log('[submitReview] Netlify环境，准备保存到Blobs', { reviewId, gameId });
+
     const store = await getStore('game-reviews');
+    console.log('[submitReview] 成功获取Blobs store');
 
     // 保存评论
     const reviewData = {
@@ -110,6 +113,8 @@ export async function submitReview(gameId, userName, rating, comment) {
       { metadata: { type: 'review' } }
     );
 
+    console.log('[submitReview] 评论已保存到Blobs！');
+
     // 保存评分（用于计算平均分）
     const ratingData = {
       gameId,
@@ -124,10 +129,13 @@ export async function submitReview(gameId, userName, rating, comment) {
       { metadata: { type: 'rating' } }
     );
 
+    console.log('[submitReview] 评分已保存！返回成功');
+
     return { success: true, review: reviewData };
   } catch (error) {
-    console.error('Error submitting review:', error);
-    return { success: false, error: '提交失败，请稍后重试' };
+    console.error('[submitReview] 发生错误:', error);
+    console.error('[submitReview] 错误详情:', error.message, error.stack);
+    return { success: false, error: `提交失败：${error.message}` };
   }
 }
 
