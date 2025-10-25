@@ -9,7 +9,7 @@ import path from 'path';
  * @returns {string|null} - 实际的文件夹名称，如果找不到返回null
  */
 function findGameFolder(gameId) {
-  const gamesDir = path.join(process.cwd(), 'public/games');
+  const gamesDir = path.join(process.cwd(), 'public/game-content');
 
   if (!fs.existsSync(gamesDir)) {
     return null;
@@ -36,7 +36,7 @@ function findGameFolder(gameId) {
  */
 export async function listGames() {
   try {
-    const gamesDir = path.join(process.cwd(), 'public/games');
+    const gamesDir = path.join(process.cwd(), 'public/game-content');
 
     // 检查目录是否存在
     if (!fs.existsSync(gamesDir)) {
@@ -52,6 +52,12 @@ export async function listGames() {
       if (fs.existsSync(configPath)) {
         try {
           const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+          // 自动转换旧的 /games/ 路径到 /game-content/
+          if (config.thumbnail && config.thumbnail.startsWith('/games/')) {
+            config.thumbnail = config.thumbnail.replace('/games/', '/game-content/');
+          }
+
           return config;
         } catch (error) {
           console.error(`Error reading game config for ${folder}:`, error);
@@ -88,13 +94,19 @@ export async function getGameInfo(gameId) {
 
     const configPath = path.join(
       process.cwd(),
-      'public/games',
+      'public/game-content',
       actualFolder,
       'game.json'
     );
 
     if (fs.existsSync(configPath)) {
       const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+
+      // 自动转换旧的 /games/ 路径到 /game-content/
+      if (config.thumbnail && config.thumbnail.startsWith('/games/')) {
+        config.thumbnail = config.thumbnail.replace('/games/', '/game-content/');
+      }
+
       console.log(`[getGameInfo] 找到游戏信息，返回: ${JSON.stringify(config)}`);
       return config;
     }
@@ -122,7 +134,7 @@ export async function gameExists(gameId) {
 
     console.log(`[gameExists] 检查游戏是否存在，gameId: ${gameId}, 实际文件夹: ${actualFolder}`);
 
-    const gamePath = path.join(process.cwd(), 'public/games', actualFolder, 'index.html');
+    const gamePath = path.join(process.cwd(), 'public/game-content', actualFolder, 'index.html');
     const exists = fs.existsSync(gamePath);
     console.log(`[gameExists] 检查路径: ${gamePath}, 结果: ${exists}`);
     return exists;

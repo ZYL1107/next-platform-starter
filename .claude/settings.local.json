@@ -16,7 +16,11 @@
       "Bash(for f in \"D:\\next-platform-starter-main\\public\\games\"/**/game.json)",
       "Bash(cat:*)",
       "Bash(done)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "WebFetch(domain:zyl.netlify.app)",
+      "Bash(git ls-tree:*)",
+      "Bash(curl:*)",
+      "Bash(git mv:*)"
     ],
     "deny": [],
     "ask": []

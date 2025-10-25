@@ -137,7 +137,7 @@ export default function GamePlayer({ gameInfo }) {
 
         {/* 游戏 iframe */}
         <iframe
-          src={`/games/${gameInfo.id}/index.html`}
+          src={`/game-content/${gameInfo.id}/index.html`}
           className="w-full h-full border-0"
           onLoad={() => setIsLoading(false)}
           allowFullScreen

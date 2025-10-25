@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const gamesDir = path.join(process.cwd(), 'public/games');
+    const gamesDir = path.join(process.cwd(), 'public/game-content');
 
     // Check if directory exists
     const dirExists = fs.existsSync(gamesDir);
